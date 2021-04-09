@@ -1,0 +1,26 @@
+[Unit]
+Description=etcd
+Documentation=https://github.com/etcd-io/etcd
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# User=etcd
+Type=notify
+Restart=always
+RestartSec=10s
+LimitNOFILE=40000
+
+ExecStart=/usr/local/bin/etcd \
+    --name {{.MemberName}} \
+    --data-dir {{.DataDir}} \
+    --listen-client-urls {{.ListenClientURL}} \
+    --advertise-client-urls {{.ListenClientURL}} \
+    --listen-peer-urls {{.ListenPeerURL}} \
+    --initial-advertise-peer-urls {{.ListenPeerURL}} \
+    --initial-cluster {{.InitialCluster}} \
+    --initial-cluster-token {{.InitialClusterToken}} \
+    --initial-cluster-state new
+
+[Install]
+WantedBy=multi-user.target
