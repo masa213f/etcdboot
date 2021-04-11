@@ -9,9 +9,9 @@ build:
 
 .PHONY: run
 run:
-	sudo ./etcdboot etcd1 member1
-	sudo ./etcdboot etcd2 member2
-	sudo ./etcdboot etcd3 member3
+	sudo ./etcdboot etcd1 member1 ./example/cluster.yaml
+	sudo ./etcdboot etcd2 member2 ./example/cluster.yaml
+	sudo ./etcdboot etcd3 member3 ./example/cluster.yaml
 	sudo systemctl daemon-reload
 	sudo systemctl enable etcd1
 	sudo systemctl enable etcd2

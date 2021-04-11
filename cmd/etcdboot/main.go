@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"text/template"
+
+	"github.com/masa213f/etcdboot/pkg/config"
 )
 
 //go:embed template/etcd.service
@@ -22,14 +24,14 @@ type etcdServiceParams struct {
 	InitialClusterToken string
 }
 
-func generateServiceFile(filename, memberName string, members *EtcdMemberList) error {
+func generateServiceFile(filename, memberName string, cluster *config.EtcdCluster) error {
 	param := &etcdServiceParams{
 		MemberName:          memberName,
 		DataDir:             filepath.Join("/var/lib", filename),
-		ListenClientURL:     members.GetMember(memberName).ClientURL(),
-		ListenPeerURL:       members.GetMember(memberName).PeerURL(),
-		InitialCluster:      members.InitialCluster(),
-		InitialClusterToken: "token",
+		ListenClientURL:     cluster.GetMember(memberName).ClientURL,
+		ListenPeerURL:       cluster.GetMember(memberName).PeerURL,
+		InitialCluster:      cluster.InitialCluster(),
+		InitialClusterToken: cluster.Name + "-token",
 	}
 
 	buf := new(bytes.Buffer)
@@ -43,36 +45,21 @@ func generateServiceFile(filename, memberName string, members *EtcdMemberList) e
 
 func main() {
 	args := os.Args[1:]
-	if len(args) != 2 {
-		fmt.Println("./etcdboot SERVICE_NAME MEMBER_NAME")
+	if len(args) != 3 {
+		fmt.Println("./etcdboot SERVICE_NAME MEMBER_NAME PATH_TO_CLUSTER_YAML")
 		os.Exit(1)
 	}
 
-	etcdMembers := &EtcdMemberList{
-		Members: []*EtcdMember{
-			{
-				Name:       "member1",
-				ClientAddr: "127.0.0.1",
-				ClientPort: 12379,
-				PeerAddr:   "127.0.0.1",
-				PeerPort:   12380,
-			},
-			{
-				Name:       "member2",
-				ClientAddr: "127.0.0.1",
-				ClientPort: 22379,
-				PeerAddr:   "127.0.0.1",
-				PeerPort:   22380,
-			},
-			{
-				Name:       "member3",
-				ClientAddr: "127.0.0.1",
-				ClientPort: 32379,
-				PeerAddr:   "127.0.0.1",
-				PeerPort:   32380,
-			},
-		},
+	cluster, err := config.ReadClusterConfig(args[2])
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
-	err := generateServiceFile(args[0], args[1], etcdMembers)
-	fmt.Println(err)
+
+	err = generateServiceFile(args[0], args[1], cluster)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fmt.Println("ok")
 }

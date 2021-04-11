@@ -1,0 +1,11 @@
+name: cluster
+members:
+  - name: member1
+    clientURL: http://127.0.0.1:12379
+    peerURL: http://127.0.0.1:12380
+  - name: member2
+    clientURL: http://127.0.0.1:22379
+    peerURL: http://127.0.0.1:22380
+  - name: member3
+    clientURL: http://127.0.0.1:32379
+    peerURL: http://127.0.0.1:32380
