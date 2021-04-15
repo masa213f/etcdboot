@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -21,6 +20,9 @@ type EtcdMember struct {
 }
 
 func (l *EtcdCluster) GetMember(name string) *EtcdMember {
+	if name == "" {
+		return l.Members[0]
+	}
 	for _, m := range l.Members {
 		if m.Name == name {
 			return m
@@ -40,7 +42,7 @@ func (l *EtcdCluster) InitialCluster() string {
 func ReadClusterConfig(filename string) (*EtcdCluster, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	return ParseClusterConfig(data)
 }
